@@ -1,0 +1,26 @@
+# Sidekiq config
+#:enable_rails_extensions: false
+:concurrency: 25
+:environment: development
+:timeout: 8
+:queues:
+  - cpu_used
+  - disk_used
+  - memory_used
+
+# Sidekiq schedule config
+#:scheduler: false
+#:resolution: 5
+:schedule:
+  save_cpu_used:
+    cron: '0 * * * * *' # Ejecutar cada minuto
+    class: CpuUsed
+    queue: cpu_used
+  save_disk_used:
+    cron: '0 0 * * * *' # Ejecutar cada una hora
+    class: DiskUsed
+    queue: disk_used
+  save_memory_used:
+    cron: '0 * * * * *' # Ejecutar cada minuto
+    class: MemoryUsed
+    queue: memory_used

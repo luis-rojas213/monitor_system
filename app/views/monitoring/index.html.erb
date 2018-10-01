@@ -1,0 +1,145 @@
+<h2 align="center">Monitoreo</h2>
+
+<%= form_tag("/monitoring", method: "get") do %>
+  <%= label_tag(:fecha,"Fecha / Hora:") %>
+  <%= text_field_tag(:fecha, params[:fecha], width: 200) %>
+  <%= submit_tag("Buscar") %>
+<% end %>
+
+<%= "<h3 align='center'>No se encontraron resultados para esta fecha.</h3>".html_safe if !@cpu.present? && !@memory.present? && !@disk.present? %>
+
+<div id="container-memory" style="width:30%;float:left;"></div>
+<div id="container-disk" style="width:30%;float:left;"></div>
+<div id="container-cpu" style="width:30%;float:left;"></div>
+
+<script type="text/javascript">
+  $('#fecha').datetimepicker({
+    uiLibrary: 'bootstrap',
+    format: 'yyyy-mm-dd HH'
+  });
+  <% if @memory.present? %>
+    Highcharts.chart('container-memory', {
+      chart: {
+        type: 'area'
+      },
+      title: {
+        text: 'Memoria'
+      },
+      yAxis: {
+        title: {
+          text: 'Uso'
+        },
+        labels: {
+          formatter: function () {
+            return this.value + ' GB';
+          }
+        }
+      },
+      xAxis: {
+        title: {
+          text: 'Minuto'
+        },
+      },
+      tooltip: {
+        pointFormat: '{series.name}: <b>{point.y:,.2f} GB</b><br/>'
+      },
+      plotOptions: {
+        area: {
+          marker: {
+            enabled: false,
+            symbol: 'circle',
+            radius: 2
+          }
+        }
+      },
+      series: [{
+        name: 'Ram',
+        data: [
+          <%= @memory.select {|v| v.memory == 'ram' }.map { |mem| ((mem.used / 1024.to_f) / 1024.to_f).round(2) }.join(',') %>
+        ]
+      }, {
+        name: 'Swap',
+        data: [
+          <%= @memory.select {|v| v.memory == 'swap' }.map { |mem| ((mem.used / 1024.to_f) / 1024.to_f).round(2) }.join(',') %>
+        ]
+      }]
+    });
+  <% end %>
+
+  <% if @disk.present? %>
+    Highcharts.chart('container-disk', {
+      chart: {
+        type: 'pie'
+      },
+      title: {
+        text: 'Uso de disco'
+      },
+      tooltip: {
+        pointFormat: '<b>{point.percentage:.1f}%</b>'
+      },
+      plotOptions: {
+        pie: {
+            allowPointSelect: true,
+            cursor: 'pointer',
+            dataLabels: {
+                enabled: true,
+                format: '<b>{point.name}</b>: {point.y:.1f} GB',
+                style: {
+                  color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+                }
+            }
+        }
+      },
+      series: [{
+        data: [
+          {
+            name: 'Utilizado',
+            y: <%= @disk[:used] / 1024 / 1024 %>,
+            sliced: true,
+            selected: true
+          }, {
+            name: 'Libre',
+            y: <%= @disk[:free] / 1024 / 1024 %>
+          }
+        ]
+      }]
+    });
+  <% end %>
+
+  <% if @cpu.present? %>
+    Highcharts.chart('container-cpu', {
+      chart: {
+          type: 'line'
+      },
+      title: {
+          text: 'Uso de CPU'
+      },
+      yAxis: {
+        title: {
+          text: 'Porcentaje de Uso'
+        }
+      },
+      xAxis: {
+        title: {
+          text: 'Minuto'
+        }
+      },
+      tooltip: {
+        pointFormat: '<b>Uso: {point.y:.0f}%</b>'
+      },
+      plotOptions: {
+        line: {
+            dataLabels: {
+              enabled: true,
+              format: ''
+            },
+            enableMouseTracking: true
+        }
+      },
+      series: [{
+        name: 'CPU',
+        data: [<%= @cpu.map(&:percentage).join(',') %>]
+      }]
+    });
+  <% end %>
+</script>
