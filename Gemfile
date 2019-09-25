@@ -7,13 +7,13 @@ ruby '2.5.1'
 gem 'rails', '~> 5.2.0'
 gem 'mysql2'
 gem 'redis-rails'
+gem 'redis'
 # Use Puma as the app server
 gem 'puma', '~> 3.11'
 # Use SCSS for stylesheets
 gem 'sass-rails', '~> 5.0'
 gem 'sidekiq' 
 gem 'sidekiq-scheduler'
-
 # Turbolinks makes navigating your web application faster. Read more: https://github.com/turbolinks/turbolinks
 gem 'turbolinks', '~> 5'
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
